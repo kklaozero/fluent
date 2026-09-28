@@ -6,6 +6,14 @@
 
 *A comprehensive set of rules, guidance, and intelligent tracking systems that transform Claude Code into your personal language tutor. Master any language through adaptive practice powered by proven cognitive science—spaced repetition, active recall, and progress tracking that learns from you.*
 
+> **About this repository.** A personal copy of [m98/fluent](https://github.com/m98/fluent) (MIT, by Mohammad Kermani and contributors), kept in sync with upstream while adding a few things of its own:
+>
+> - **`/fluent-listening`** with an offline neural voice — `tts.py` synthesizes a clip from your own due reviews and mistakes, and the transcript stays hidden until the reveal
+> - **`/fluent-add-word`** — queue a word for review without sitting through a full session
+> - **DeepSeek Harness support** — the same 14 skills are mirrored under `.dsh/skills/`, so the kit runs under DSH as well as Claude Code
+>
+> Learner data is **not** in this repository — see [Where your data lives](#where-your-data-lives).
+
 https://github.com/user-attachments/assets/66d68aad-210a-452d-b405-b58c13f42f53
 
 ---
@@ -16,11 +24,15 @@ https://github.com/user-attachments/assets/66d68aad-210a-452d-b405-b58c13f42f53
 
 ### 1. Install
 
+Clone this repo and start your agent from its root:
+
 ```bash
-claude plugin marketplace add m98/fluent && claude plugin install fluent@m98
+git clone https://github.com/kklaozero/fluent.git
+cd fluent
+claude          # or: dsh, for DeepSeek Harness
 ```
 
-One line. Registers the marketplace, installs the plugin. Works globally from any directory after this.
+Skills are discovered from the repo itself, so there is no registration step. Want the published upstream version instead (without the local additions)? See [Alternative: plugin install](#alternative-plugin-install-upstream).
 
 ### 2. Start learning
 
@@ -37,31 +49,30 @@ That's it.
 
 ### Requirements
 
-- [Claude Code](https://code.claude.com) installed
-- **Python 3.8+** (most systems already have it — check with `python3 --version`). Install via [python.org](https://www.python.org/downloads/), `brew install python3`, or your distro's package manager. No pip packages needed — Fluent uses only the standard library.
-- **Bash** for the PreCompact backup hook (built-in on macOS/Linux; on Windows use WSL or Git Bash).
+- [Claude Code](https://code.claude.com) — or **DeepSeek Harness** (DSH), which reads the mirrored skills in `.dsh/skills/`
+- **Python 3.8+** (most systems already have it — check with `python3 --version`; on Windows the interpreter is usually `python`). Install via [python.org](https://www.python.org/downloads/), `brew install python3`, or your distro's package manager. No pip packages needed — Fluent uses only the standard library.
+- **Bash** for the PreCompact backup hook (built-in on macOS/Linux; on Windows use WSL or Git Bash). This hook is Claude Code–only; under DSH the database writer takes its own pre-write backup instead.
 - **A voice for `/fluent-listening`** (optional, one-time). Everything else works without it. For a fully offline neural voice, install the bundled open-source engine (~90 MB, Apache-2.0 — see [Listening audio setup](#listening-audio-setup)); or `pip install edge-tts` for online near-human voices; or rely on a system voice where one is installed.
 
-### Verify, update, uninstall
+### Update
 
 ```bash
+git pull                # this repo
+git fetch upstream      # upstream m98/fluent, if you keep that remote
+```
+
+### Alternative: plugin install (upstream)
+
+Prefer the published version without the local additions?
+
+```bash
+claude plugin marketplace add m98/fluent && claude plugin install fluent@m98
 claude plugin list                    # expect: fluent@m98  enabled
-claude plugin update fluent@m98       # pull latest version
+claude plugin update fluent@m98       # pull latest published version
 claude plugin uninstall fluent@m98    # remove entirely
 ```
 
-### Alternative: git clone
-
-Prefer to hack on the skills or keep per-project state?
-
-```bash
-git clone https://github.com/m98/fluent.git
-cd fluent
-claude          # launch from repo root
-/fluent-setup
-```
-
-Learner data lives in `./data/` inside the cloned repo instead of `~/.claude/fluent-data/`.
+Plugin mode keeps learner data in `~/.claude/fluent-data/` — the same place the clone uses, since `data/*.json` is git-ignored and never present in a fresh clone.
 
 ### Where your data lives
 
@@ -70,7 +81,7 @@ Fluent resolves the data directory in this order — first match wins:
 1. `$FLUENT_DATA_DIR` if set (override everything).
 2. `$CLAUDE_PROJECT_DIR/data/` if it has `learner-profile.json` (clone mode, running from outside the repo root).
 3. `./data/` if it has `learner-profile.json` (clone mode, running inside the repo).
-4. `~/.claude/fluent-data/` (plugin-install default).
+4. `~/.claude/fluent-data/` — the fallback, and where **this** checkout keeps its data: the repo ships `data/` with only a README and a `.gitkeep`, so step 3 never matches.
 
 Set `FLUENT_DATA_DIR` to run multiple learners on one machine:
 
@@ -83,6 +94,8 @@ Check where Fluent is currently looking:
 ```bash
 python3 -c "import sys; sys.path.insert(0, '.claude/hooks'); from fluent_paths import data_dir; print(data_dir())"
 ```
+
+(`python3` here and throughout; on Windows and under DSH the interpreter is `python`.)
 
 ---
 
@@ -151,7 +164,7 @@ Every practice session follows this intelligent cycle:
 | **1. You Practice** | Answer a question in your target language | Active recall forces your brain to retrieve information |
 | **2. AI Analyzes** | System evaluates your response instantly | Identifies exactly what you got right or wrong |
 | **3. Get Feedback** | Clear explanation of mistakes + correct version | Learning happens when you understand WHY |
-| **4. System Tracks** | Updates 4 databases automatically | Remembers your weak spots and strengths |
+| **4. System Tracks** | Updates 6 databases automatically | Remembers your weak spots and strengths |
 | **5. Adapts** | Next question matches your current level | Always challenging, never frustrating |
 
 **What Gets Tracked:**
@@ -186,12 +199,12 @@ This system implements proven learning science:
 
 ## 🎮 Available Commands & Skills
 
-Fluent is built as **Claude Code skills** — 13 of them. Skills work two ways:
+Fluent is built as **agent skills** — 14 of them. Skills work two ways:
 
 1. **Type the slash command** (`/fluent-learn`, `/fluent-vocab`, etc.) — you explicitly start a session. Learner-facing skills are gated so they only run this way. No accidental 20-minute session triggered by a chat message.
 2. **Ask naturally** — read-only skills like `/fluent-progress` auto-trigger when you ask "how am I doing?" or "what's my streak?". Helper skills (SM-2 math, feedback formatter, DB updater, session analyzer) auto-load whenever Claude needs them during a session.
 
-All 13 skills appear in your `/` menu so you can always invoke any of them manually.
+All 14 skills appear in your `/` menu so you can always invoke any of them manually. A skill added mid-project shows up only in a new session.
 
 ### Learner-facing commands
 
@@ -214,6 +227,7 @@ These are the commands you'll use daily. Each is backed by a dedicated skill und
 | **`/fluent-speaking`** | **Conversation practice** - Role-play scenarios through typed dialogue. Practice natural conversations, asking for directions, ordering food, etc. | **2-3x per week** - Builds confidence for real conversations. Typed practice helps you think through responses without pressure. |
 | **`/fluent-reading`** | **Reading comprehension** - Read short texts (stories, articles, dialogues) then answer comprehension questions. Expands vocabulary in context. | **2-3x per week** - Improves overall understanding. Best for intermediate+ learners. Reading is one of the fastest ways to absorb grammar patterns. |
 | **`/fluent-listening`** | **Listening comprehension** - Writes a short audio clip built from your own due reviews and past mistakes, plays it (two plays max), then asks main-idea, detail, number, and inference questions. The transcript stays hidden until the end. | **2-3x per week** - The one thing typed practice cannot train. Needs a voice — see [Listening audio setup](#listening-audio-setup). |
+| **`/fluent-add-word`** | **Queue a word manually** - Add a word to the spaced-repetition queue without a full session: term, meaning, and optional category, difficulty, and example sentence. Duplicates are checked before saving and the first review lands tomorrow. | **Whenever a word shows up** - Real life does not wait for a session. Note it now, review it on schedule. |
 
 #### Listening audio setup
 
@@ -274,9 +288,9 @@ These skills don't change what the learner-facing commands do — they let Claud
 
 ## 📁 System Architecture
 
-### Data Layer (`/data` directory)
+### Data Layer (the six JSON databases)
 
-**Your learning data is tracked in 6 JSON databases** (created automatically by `/fluent-setup`):
+**Your learning data is tracked in 6 JSON databases** (created automatically by `/fluent-setup`). They live in the resolved data directory — `~/.claude/fluent-data/` in this checkout — not inside the repo:
 
 | File | Purpose | Created When |
 |------|---------|--------------|
@@ -289,7 +303,20 @@ These skills don't change what the learner-facing commands do — they let Claud
 
 **📋 Want to see the structure?** Check `/data-examples/` for template files showing the complete schema.
 
-**🔒 Privacy:** All data stays on your machine. Automatically excluded from git via `.gitignore`.
+**🔒 Privacy:** All data stays on your machine, and `data/*.json` plus `results/*.md` are excluded from git via `.gitignore` — which also means a clone on a second machine starts with an empty profile until you copy the data directory over.
+
+### Portability (using Fluent on more than one computer)
+
+The repo carries the system; the data directory carries your history. Move both:
+
+```bash
+# on the new machine
+git clone https://github.com/kklaozero/fluent.git && cd fluent
+# then copy ~/.claude/fluent-data/ (all six DBs + .backups/) and results/ across
+python .claude/hooks/tts.py --install    # listening voice; the .tmp/ engine does not travel
+```
+
+Keep the data directory in sync with OneDrive/Syncthing or a separate private repo, and practice on **one machine at a time** so two writers never race over the same JSON.
 
 ### Intelligence Layer
 
@@ -302,13 +329,14 @@ The AI follows these guides:
 
 ### Interface Layer
 
-- **Skills** (`.claude/skills/`) — 13 skills total. 9 learner-facing (`/fluent-setup`, `/fluent-learn`, `/fluent-vocab`, `/fluent-writing`, `/fluent-speaking`, `/fluent-reading`, `/fluent-listening`, `/fluent-review`, `/fluent-progress`) run when you invoke them. 4 helper skills (`/fluent-sm2-calculator`, `/fluent-feedback-formatter`, `/fluent-db-updater`, `/fluent-session-analyzer`) auto-load whenever Claude needs them during a session — and are also directly `/`-invokable if you want to read the reference.
-- **DeepSeek Harness mirror** (`.dsh/skills/`) — DSH discovers project skills here instead of in `.claude/skills/`, so the same 13 skills are mirrored there and the two trees are kept in sync. The DSH copies open with a short "Running in DeepSeek Harness" preamble (PowerShell, `python` rather than `python3`, no bash heredocs).
+- **Skills** (`.claude/skills/`) — 14 Fluent skills. 10 learner-facing (`/fluent-setup`, `/fluent-learn`, `/fluent-vocab`, `/fluent-writing`, `/fluent-speaking`, `/fluent-reading`, `/fluent-listening`, `/fluent-review`, `/fluent-add-word`, `/fluent-progress`) run when you invoke them — `/fluent-progress` is the one that also auto-invokes on a stats question. 4 helper skills (`/fluent-sm2-calculator`, `/fluent-feedback-formatter`, `/fluent-db-updater`, `/fluent-session-analyzer`) auto-load whenever the agent needs them during a session, and are directly `/`-invokable if you want to read the reference.
+- **DeepSeek Harness mirror** (`.dsh/skills/`) — DSH discovers project skills here instead of in `.claude/skills/`, so the same 14 skills are mirrored there and the two trees are kept in sync. The DSH copies open with a short "Running in DeepSeek Harness" preamble (PowerShell, `python` rather than `python3`, no bash heredocs).
+- **Vendored, not part of Fluent** (`.claude/skills/playwright-cli/`) — a browser-automation skill kept in this clone for convenience. Safe to delete if you want the repo to stay strictly language-learning; DSH never loads it.
 - **TTS helper** (`.claude/hooks/tts.py`) — synthesizes listening clips to audio files with an auto-detected engine chain, and installs the offline engine with `--install`.
 - **Plugin manifests** (`.claude-plugin/`) — `plugin.json` + `marketplace.json` make Fluent installable via `/plugin marketplace add m98/fluent`.
 - **Automatic Hooks** (`.claude/hooks/`) — SessionStart welcome, SessionEnd backups, PostToolUse JSON validation + backups, PreCompact safety backup. Both `hooks.json` (plugin mode) and `.claude/settings.json` (clone mode) wire them up.
 - **Session Results** (`/results/`) — Detailed practice logs per session, parsed by `fluent-session-analyzer` to plan future sessions.
-- **Where the learner data lives** — the six databases resolve to `~/.claude/fluent-data` (or `$FLUENT_DATA_DIR`), and `data/*.json` plus `/results/*.md` are git-ignored on purpose. Cloning this repo gets you the **system**, not the learner's history: carry that data directory (and `results/`) separately when you move to another machine, or `/fluent-progress` will start from an empty profile.
+- **Where the learner data lives** — the six databases resolve to `~/.claude/fluent-data` (or `$FLUENT_DATA_DIR`), and `data/*.json` plus `/results/*.md` are git-ignored on purpose. See [Portability](#portability-using-fluent-on-more-than-one-computer).
 
 ---
 
@@ -357,28 +385,28 @@ The system automatically adjusts:
 
 ### Technology Stack
 
-- **Platform:** Claude Code (Anthropic), installable as a plugin or by clone
-- **AI Model:** Claude (any Claude Code-supported model)
+- **Platform:** Claude Code (Anthropic) or DeepSeek Harness — by clone (primary here) or as an upstream plugin
+- **AI Model:** Claude (any Claude Code-supported model), or the DSH-configured model
 - **Data Format:** JSON (human-readable)
-- **Skills:** Markdown `SKILL.md` files with YAML frontmatter (13 total — 9 learner-facing + 4 helper)
-- **Hooks:** Python + Bash, triggered on SessionStart / SessionEnd / PostToolUse / PreCompact
+- **Skills:** Markdown `SKILL.md` files with YAML frontmatter (14 Fluent skills — 10 learner-facing + 4 helper — mirrored for DSH in `.dsh/skills/`)
+- **Hooks:** Python + Bash, triggered on SessionStart / SessionEnd / PostToolUse / PreCompact (Claude Code); DSH relies on the database writer's own pre-write backup
 - **Algorithm:** SM-2 (SuperMemo 2)
 - **Version Control:** Git
 
 ### Data Privacy & Security
 
 - ✅ **All data stays local** on your machine
-- ✅ **No external API calls** (except Claude Code itself)
+- ✅ **No external API calls** from the learning loop — the only network use is the optional listening voice (`tts.py --install`, or `pip install edge-tts`)
 - ✅ **Automatic .gitignore** prevents committing personal data
 - ✅ **Automatic backups** to `.backups/` directory
 - ✅ **No tracking, no analytics, no telemetry**
 
 ### Hooks System (Automated Data Management)
 
-Fluent uses intelligent Claude Code hooks to ensure your data is always safe and validated:
+Fluent uses intelligent Claude Code hooks to ensure your data is always safe and validated. They fire in **Claude Code only** — under DeepSeek Harness the equivalent safety net is the pre-write backup that `update-db.py` writes to `<data_dir>/.backups/pre-update-session-{NNN}/`.
 
 **🔄 PostToolUse Hook** (after every Write/Edit)
-- ✅ Creates timestamped backup: `data/file.json.backup-20231117-143022`
+- ✅ Creates timestamped backup: `<data_dir>/learner-profile.json.backup-20231117-143022`
 - ✅ Validates JSON structure automatically
 - ✅ Alerts you immediately if data is malformed
 
@@ -404,6 +432,8 @@ See [`.claude/hooks/README.md`](.claude/hooks/README.md) for technical details.
 ## 🤝 Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+> This repository is a **personal copy** — its additions (listening, add-word, the DSH mirror) are unversioned local work. Changes meant for everyone belong upstream, at [m98/fluent](https://github.com/m98/fluent).
 
 ### Priority Areas
 
@@ -440,6 +470,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Claude** by Anthropic - For the amazing AI capabilities
+- **[m98/fluent](https://github.com/m98/fluent)** by Mohammad Kermani, babkinvanya, lgnbhl and contributors - The upstream project this copy builds on (MIT)
 - **SuperMemo** - For the SM-2 algorithm
 - **Anki** - For inspiring the flashcard approach
 - **Language learning research** - Krashen, Bjork, Ebbinghaus, and many others
@@ -450,7 +481,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support & Community
 
 - 📖 **Documentation:** [Full docs in this repo](docs/)
-- 🐛 **Bug Reports & Questions:** [GitHub Issues](https://github.com/m98/fluent/issues)
+- 🐛 **Bug Reports & Questions:** [upstream issues](https://github.com/m98/fluent/issues) — for the shared system. The additions in this copy (listening, add-word, DSH mirror) are personal and unversioned.
 - 📧 **Email:** For sensitive issues
 
 ---
@@ -465,13 +496,13 @@ It helps others discover this project and motivates us to keep improving it!
 
 ## 📈 Project Stats
 
-- **Skills:** 13 (9 learner-facing + 4 helper)
-- **Hooks:** 5 automated (SessionStart, SessionEnd, PostToolUse, PreCompact, DB helpers)
-- **Databases:** 6 JSON tracking files
-- **Install paths:** 2 (Claude Code plugin + git clone — both supported)
+- **Skills:** 14 Fluent (10 learner-facing + 4 helper), mirrored for DSH
+- **Hooks:** 5 automated (SessionStart, SessionEnd, PostToolUse, PreCompact, DB helpers) — Claude Code
+- **Databases:** 6 JSON tracking files, kept outside the repo
+- **Install paths:** 2 (git clone — primary here — or the upstream plugin)
 - **Languages Supported:** All (system is fully language-agnostic)
 - **Learning Methods:** 6 evidence-based principles
-- **Contributors:** [See contributors](https://github.com/m98/fluent/graphs/contributors)
+- **Upstream:** [m98/fluent](https://github.com/m98/fluent) · [contributors](https://github.com/m98/fluent/graphs/contributors)
 
 ---
 
@@ -484,7 +515,7 @@ It helps others discover this project and motivates us to keep improving it!
 ## 🛠️ Troubleshooting
 
 **`python3: command not found` when hooks run.**
-Install Python 3.8+ and make sure `python3` is on your PATH. On macOS: `brew install python3`. On Debian/Ubuntu: `sudo apt install python3`. On Windows: install via [python.org](https://www.python.org/downloads/) or use WSL.
+Install Python 3.8+ and make sure `python3` is on your PATH. On macOS: `brew install python3`. On Debian/Ubuntu: `sudo apt install python3`. On Windows: install via [python.org](https://www.python.org/downloads/) or use WSL — and note the interpreter is usually `python`, which is what the DSH skill copies call.
 
 **Hooks silently do nothing on Windows.**
 The PreCompact hook is a Bash script. Run Claude Code from WSL or Git Bash. The Python hooks (SessionStart, SessionEnd, PostToolUse) work on native Windows Python — only PreCompact is Bash-only.
@@ -495,8 +526,8 @@ Check the data-dir resolution order (see above). Set `FLUENT_DATA_DIR` explicitl
 **JSON validation fails after a manual edit.**
 The PostToolUse hook exits with status 2 if it finds malformed JSON. The last 10 backups live at `<data_dir>/<filename>.json.backup-<timestamp>`. Restore with: `cp <data_dir>/learner-profile.json.backup-XXXXXX <data_dir>/learner-profile.json`.
 
-**Skills don't appear in the `/` menu after plugin install.**
-Restart Claude Code. If still missing, verify install:
+**Skills don't appear in the `/` menu.**
+Skills are read when a session starts, so restart or open a new session after adding or editing one. In clone mode, check that you launched the agent from the repo root — the directory must contain `.claude/skills/` (Claude Code) or `.dsh/skills/` (DSH). After a plugin install, verify it:
 
 ```bash
 claude plugin list                              # should show fluent@m98 enabled
@@ -543,14 +574,17 @@ A: We have AGENTS.md for instructing other AI CLIs as well, but this kit is spec
 Claude Code and its unique capabilities. Using other AI platforms may not yield the same results. 
 But feel free to experiment and share your findings!
 
+**Q: Does this copy run anywhere other than Claude Code?**
+A: Yes — it is also wired for DeepSeek Harness. DSH reads project skills from `.dsh/skills/` rather than `.claude/skills/`, so all 14 skills are mirrored there (the helper-file hooks are Claude Code–only; DSH sessions get their safety net from the database writer's backup). See [DeepSeek Harness mirror](#interface-layer).
+
 
 ---
 
 *Start your language learning journey today!* 🚀
 
 ```bash
-git clone https://github.com/m98/fluent.git
+git clone https://github.com/kklaozero/fluent.git
 cd fluent
-claude
+claude          # or: dsh
 /fluent-setup
 ```
