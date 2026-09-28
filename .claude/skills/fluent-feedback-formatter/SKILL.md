@@ -1,6 +1,6 @@
 ---
 name: fluent-feedback-formatter
-description: Canonical feedback template for every learner answer in the Fluent system — celebrate correct parts, correct mistakes with category and brief explanation, show the full correct version, score out of 10, and classify severity (🔴 critical / 🟡 moderate / 🟢 minor). Use in every practice session (fluent-writing, fluent-vocab, fluent-speaking, fluent-reading, fluent-review) immediately after the learner submits an answer.
+description: Canonical feedback template for every learner answer in the Fluent system — celebrate correct parts, correct mistakes with category and brief explanation, show the full correct version, score out of 10, and classify severity (🔴 critical / 🟡 moderate / 🟢 minor). Use in every practice session (fluent-writing, fluent-vocab, fluent-speaking, fluent-reading, fluent-listening, fluent-review) immediately after the learner submits an answer.
 ---
 
 # Feedback Formatter
@@ -13,7 +13,7 @@ Every practice session ends each turn with immediate feedback. Consistency matte
 
 Load this skill whenever the tutor:
 
-- Grades a learner answer in any practice skill (`fluent-learn`, `fluent-vocab`, `fluent-writing`, `fluent-speaking`, `fluent-reading`, `fluent-review`).
+- Grades a learner answer in any practice skill (`fluent-learn`, `fluent-vocab`, `fluent-writing`, `fluent-speaking`, `fluent-reading`, `fluent-listening`, `fluent-review`).
 - Needs to classify an error by severity before writing to `mistakes-db.json`.
 - Needs to tag an error by category (grammar, vocabulary, prepositions, etc.).
 

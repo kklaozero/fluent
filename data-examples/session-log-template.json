@@ -12,7 +12,7 @@
       "time_end": "{HH:MM:SS}",
       "duration_minutes": 0,
       "skill_practiced": "{writing|speaking|vocabulary|reading|listening|mixed}",
-      "command_used": "{/fluent-learn|/fluent-vocab|/fluent-writing|/fluent-speaking|/fluent-reading|/fluent-review}",
+      "command_used": "{/fluent-learn|/fluent-vocab|/fluent-writing|/fluent-speaking|/fluent-reading|/fluent-listening|/fluent-review}",
       "exercises_completed": 0,
       "exercises_correct": 0,
       "exercises_incorrect": 0,

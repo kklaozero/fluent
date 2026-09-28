@@ -40,6 +40,7 @@ That's it.
 - [Claude Code](https://code.claude.com) installed
 - **Python 3.8+** (most systems already have it — check with `python3 --version`). Install via [python.org](https://www.python.org/downloads/), `brew install python3`, or your distro's package manager. No pip packages needed — Fluent uses only the standard library.
 - **Bash** for the PreCompact backup hook (built-in on macOS/Linux; on Windows use WSL or Git Bash).
+- **A voice for `/fluent-listening`** (optional, one-time). Everything else works without it. For a fully offline neural voice, install the bundled open-source engine (~90 MB, Apache-2.0 — see [Listening audio setup](#listening-audio-setup)); or `pip install edge-tts` for online near-human voices; or rely on a system voice where one is installed.
 
 ### Verify, update, uninstall
 
@@ -185,12 +186,12 @@ This system implements proven learning science:
 
 ## 🎮 Available Commands & Skills
 
-Fluent is built as **Claude Code skills** — 12 of them. Skills work two ways:
+Fluent is built as **Claude Code skills** — 13 of them. Skills work two ways:
 
 1. **Type the slash command** (`/fluent-learn`, `/fluent-vocab`, etc.) — you explicitly start a session. Learner-facing skills are gated so they only run this way. No accidental 20-minute session triggered by a chat message.
 2. **Ask naturally** — read-only skills like `/fluent-progress` auto-trigger when you ask "how am I doing?" or "what's my streak?". Helper skills (SM-2 math, feedback formatter, DB updater, session analyzer) auto-load whenever Claude needs them during a session.
 
-All 12 skills appear in your `/` menu so you can always invoke any of them manually.
+All 13 skills appear in your `/` menu so you can always invoke any of them manually.
 
 ### Learner-facing commands
 
@@ -212,6 +213,23 @@ These are the commands you'll use daily. Each is backed by a dedicated skill und
 | **`/fluent-writing`** | **Writing practice** - Practice emails, letters, essays, or forms in your target language. Get detailed corrections with grammar explanations. | **Daily for exam prep** - Essential if you're preparing for language exams. Also great for building confidence in real-world communication. |
 | **`/fluent-speaking`** | **Conversation practice** - Role-play scenarios through typed dialogue. Practice natural conversations, asking for directions, ordering food, etc. | **2-3x per week** - Builds confidence for real conversations. Typed practice helps you think through responses without pressure. |
 | **`/fluent-reading`** | **Reading comprehension** - Read short texts (stories, articles, dialogues) then answer comprehension questions. Expands vocabulary in context. | **2-3x per week** - Improves overall understanding. Best for intermediate+ learners. Reading is one of the fastest ways to absorb grammar patterns. |
+| **`/fluent-listening`** | **Listening comprehension** - Writes a short audio clip built from your own due reviews and past mistakes, plays it (two plays max), then asks main-idea, detail, number, and inference questions. The transcript stays hidden until the end. | **2-3x per week** - The one thing typed practice cannot train. Needs a voice — see [Listening audio setup](#listening-audio-setup). |
+
+#### Listening audio setup
+
+`/fluent-listening` is the only skill that needs audio output. It picks the best engine it can find, in this order: **sherpa-onnx** (offline, bundled, Apache-2.0) → **piper** → **edge-tts** → a **system voice** (Windows SAPI / macOS `say` / Linux `espeak-ng`).
+
+```bash
+# Offline neural voice, one time, ~90 MB (engine + en_US voice). No pip, no account:
+python3 .claude/hooks/tts.py --install
+python3 .claude/hooks/tts.py --install --lang de      # any supported language
+python3 .claude/hooks/tts.py --check                  # what is available right now
+
+# Or skip the download and use online neural voices instead:
+pip install edge-tts
+```
+
+Voices land in `<data_dir>/tts/` (override with `FLUENT_TTS_HOME`). Note that many Windows machines ship with the Speech feature but no voice files — `--check` probes with a real synthesis and tells you plainly if that is the case.
 
 #### Progress Command
 
@@ -284,7 +302,8 @@ The AI follows these guides:
 
 ### Interface Layer
 
-- **Skills** (`.claude/skills/`) — 12 skills total. 8 learner-facing (`/fluent-setup`, `/fluent-learn`, `/fluent-vocab`, `/fluent-writing`, `/fluent-speaking`, `/fluent-reading`, `/fluent-review`, `/fluent-progress`) run when you invoke them. 4 helper skills (`/fluent-sm2-calculator`, `/fluent-feedback-formatter`, `/fluent-db-updater`, `/fluent-session-analyzer`) auto-load whenever Claude needs them during a session — and are also directly `/`-invokable if you want to read the reference.
+- **Skills** (`.claude/skills/`) — 13 skills total. 9 learner-facing (`/fluent-setup`, `/fluent-learn`, `/fluent-vocab`, `/fluent-writing`, `/fluent-speaking`, `/fluent-reading`, `/fluent-listening`, `/fluent-review`, `/fluent-progress`) run when you invoke them. 4 helper skills (`/fluent-sm2-calculator`, `/fluent-feedback-formatter`, `/fluent-db-updater`, `/fluent-session-analyzer`) auto-load whenever Claude needs them during a session — and are also directly `/`-invokable if you want to read the reference.
+- **TTS helper** (`.claude/hooks/tts.py`) — synthesizes listening clips to audio files with an auto-detected engine chain, and installs the offline engine with `--install`.
 - **Plugin manifests** (`.claude-plugin/`) — `plugin.json` + `marketplace.json` make Fluent installable via `/plugin marketplace add m98/fluent`.
 - **Automatic Hooks** (`.claude/hooks/`) — SessionStart welcome, SessionEnd backups, PostToolUse JSON validation + backups, PreCompact safety backup. Both `hooks.json` (plugin mode) and `.claude/settings.json` (clone mode) wire them up.
 - **Session Results** (`/results/`) — Detailed practice logs per session, parsed by `fluent-session-analyzer` to plan future sessions.
@@ -339,7 +358,7 @@ The system automatically adjusts:
 - **Platform:** Claude Code (Anthropic), installable as a plugin or by clone
 - **AI Model:** Claude (any Claude Code-supported model)
 - **Data Format:** JSON (human-readable)
-- **Skills:** Markdown `SKILL.md` files with YAML frontmatter (12 total — 8 learner-facing + 4 helper)
+- **Skills:** Markdown `SKILL.md` files with YAML frontmatter (13 total — 9 learner-facing + 4 helper)
 - **Hooks:** Python + Bash, triggered on SessionStart / SessionEnd / PostToolUse / PreCompact
 - **Algorithm:** SM-2 (SuperMemo 2)
 - **Version Control:** Git
@@ -444,7 +463,7 @@ It helps others discover this project and motivates us to keep improving it!
 
 ## 📈 Project Stats
 
-- **Skills:** 12 (8 learner-facing + 4 helper)
+- **Skills:** 13 (9 learner-facing + 4 helper)
 - **Hooks:** 5 automated (SessionStart, SessionEnd, PostToolUse, PreCompact, DB helpers)
 - **Databases:** 6 JSON tracking files
 - **Install paths:** 2 (Claude Code plugin + git clone — both supported)

@@ -1,6 +1,6 @@
 ---
 name: fluent-learn
-description: Main adaptive language-learning session that mixes skills (writing, speaking, vocabulary, reading) and exercise types based on the learner's current level, weak patterns, and due reviews. Triggered only when the learner types /fluent-learn. Greets the learner, shows today's plan, asks what to practice, runs interleaved exercises one at a time, and updates all databases at the end.
+description: Main adaptive language-learning session that mixes skills (writing, speaking, vocabulary, reading, listening) and exercise types based on the learner's current level, weak patterns, and due reviews. Triggered only when the learner types /fluent-learn. Greets the learner, shows today's plan, asks what to practice, runs interleaved exercises one at a time, and updates all databases at the end.
 allowed-tools: Read, Write, Bash
 disable-model-invocation: true
 ---
@@ -52,16 +52,17 @@ Need all 6 DBs. If any missing, direct the learner to `/fluent-setup` and stop.
 2. 🗣️ Speaking (typed conversation)
 3. 📖 Vocabulary (flashcard drills)
 4. 👀 Reading (comprehension)
-5. 🔄 Spaced Review (today's due items)
-6. 🎲 Surprise me! (adaptive mix)
+5. 🎧 Listening (audio clip + comprehension questions)
+6. 🔄 Spaced Review (today's due items)
+7. 🎲 Surprise me! (adaptive mix)
 
 **Type a number or skill name:**
 ```
 
 ### 4. Route
 
-- 1-5 → hand off to the matching skill (`fluent-writing`, `fluent-speaking`, `fluent-vocab`, `fluent-reading`, `fluent-review`). Those skills cover everything needed; this skill's job here is just to dispatch.
-- 6 (adaptive mix) → use this skill's own exercise sequencer (below).
+- 1-6 → hand off to the matching skill (`fluent-writing`, `fluent-speaking`, `fluent-vocab`, `fluent-reading`, `fluent-listening`, `fluent-review`). Those skills cover everything needed; this skill's job here is just to dispatch.
+- 7 (adaptive mix) → use this skill's own exercise sequencer (below).
 
 ### 5. Adaptive mix (option 6)
 

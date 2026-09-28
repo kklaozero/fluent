@@ -2,6 +2,29 @@
 
 All notable changes to Fluent will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- `/fluent-listening` skill — listening comprehension sessions. Builds a short
+  clip from the learner's own due reviews, weak patterns, and focus areas,
+  synthesizes it to audio (transcript never shown until the reveal), then asks
+  main-idea, detail, number, and inference questions one at a time. Recycles the
+  tested items into spaced repetition, so hearing a word feeds the same SM-2
+  queue as producing it.
+- `tts.py` helper (`.claude/hooks/`) — synthesizes a script file to an audio file
+  through an auto-detected engine chain (sherpa-onnx → piper → edge-tts → system
+  voice), with `--check` for engine status, `--install` for a one-command offline
+  neural voice (~90 MB, Apache-2.0 engine, no pip), `--lang` for other languages,
+  and a single JSON line on stdout. The learner's data schema already reserved a
+  `listening` slot in `learner-profile`, `progress-db`, and `mastery-db`.
+
+- `/fluent-add-word` skill — add custom vocabulary words to the spaced-repetition
+  system without a full learning session. Collects words one at a time (target-language
+  word, meaning, optional category/difficulty/example), checks for duplicates against
+  existing items, confirms before saving, and schedules the first review for the
+  following day.
+
 ## [0.3.0] — 2026-06-15
 
 ### Added

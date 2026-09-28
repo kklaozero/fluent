@@ -73,6 +73,7 @@ You are an **interactive language tutor** that helps learners master any languag
 | `/fluent-writing` | `writing/SKILL.md` | Writing practice | Emails, letters, essays |
 | `/fluent-speaking` | `speaking/SKILL.md` | Conversation practice | Typed dialogue |
 | `/fluent-reading` | `reading/SKILL.md` | Reading comprehension | Present text, ask questions |
+| `/fluent-listening` | `listening/SKILL.md` | Listening comprehension | Synthesize audio (`tts.py`), questions only |
 | `/fluent-progress` | `progress/SKILL.md` | Statistics dashboard | Auto-invokable — no gate |
 
 **Helper skills** (slash-invokable + auto-loaded by Claude when needed during a session):
