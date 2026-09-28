@@ -303,10 +303,12 @@ The AI follows these guides:
 ### Interface Layer
 
 - **Skills** (`.claude/skills/`) — 13 skills total. 9 learner-facing (`/fluent-setup`, `/fluent-learn`, `/fluent-vocab`, `/fluent-writing`, `/fluent-speaking`, `/fluent-reading`, `/fluent-listening`, `/fluent-review`, `/fluent-progress`) run when you invoke them. 4 helper skills (`/fluent-sm2-calculator`, `/fluent-feedback-formatter`, `/fluent-db-updater`, `/fluent-session-analyzer`) auto-load whenever Claude needs them during a session — and are also directly `/`-invokable if you want to read the reference.
+- **DeepSeek Harness mirror** (`.dsh/skills/`) — DSH discovers project skills here instead of in `.claude/skills/`, so the same 13 skills are mirrored there and the two trees are kept in sync. The DSH copies open with a short "Running in DeepSeek Harness" preamble (PowerShell, `python` rather than `python3`, no bash heredocs).
 - **TTS helper** (`.claude/hooks/tts.py`) — synthesizes listening clips to audio files with an auto-detected engine chain, and installs the offline engine with `--install`.
 - **Plugin manifests** (`.claude-plugin/`) — `plugin.json` + `marketplace.json` make Fluent installable via `/plugin marketplace add m98/fluent`.
 - **Automatic Hooks** (`.claude/hooks/`) — SessionStart welcome, SessionEnd backups, PostToolUse JSON validation + backups, PreCompact safety backup. Both `hooks.json` (plugin mode) and `.claude/settings.json` (clone mode) wire them up.
 - **Session Results** (`/results/`) — Detailed practice logs per session, parsed by `fluent-session-analyzer` to plan future sessions.
+- **Where the learner data lives** — the six databases resolve to `~/.claude/fluent-data` (or `$FLUENT_DATA_DIR`), and `data/*.json` plus `/results/*.md` are git-ignored on purpose. Cloning this repo gets you the **system**, not the learner's history: carry that data directory (and `results/`) separately when you move to another machine, or `/fluent-progress` will start from an empty profile.
 
 ---
 
