@@ -40,3 +40,10 @@ npm-debug.log*
 temp/
 *.json.tmp
 
+# Agent scratch payloads (rewritten every session; old ones live in .tmp/legacy-payloads/)
+.claude/tmp_*
+.claude/temp/
+
+# Claude Code local settings — machine-specific permissions, never shared
+.claude/settings.local.json
+
