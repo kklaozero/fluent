@@ -24,18 +24,27 @@ from pathlib import Path
 
 
 def force_utf8_io() -> None:
-    """Make stdout/stderr UTF-8 so emoji/CJK output doesn't crash on Windows.
+    """Make stdin/stdout/stderr UTF-8 so CJK/emoji I/O doesn't crash on Windows.
 
     Windows consoles default to a legacy code page (cp1252/gbk); printing the
-    emoji in the hook summaries raises UnicodeEncodeError there. No-op on
-    platforms whose streams are already UTF-8 or predate ``reconfigure``.
-    Call once at the top of any hook that prints.
+    emoji in the hook summaries raises UnicodeEncodeError there, and JSON
+    payloads piped to stdin (hook events, update-db session reports) get
+    decoded with the wrong codepage — either crashing on lone surrogates at
+    write time or, worse, silently storing mojibake in the databases. stdin
+    uses strict errors so invalid input fails at read time with a clear
+    UnicodeDecodeError instead of corrupting data. No-op on platforms whose
+    streams are already UTF-8 or predate ``reconfigure``.
+    Call once at the top of any hook that prints or reads stdin.
     """
     for stream in (sys.stdout, sys.stderr):
         try:
             stream.reconfigure(encoding="utf-8")
         except (AttributeError, ValueError):
             pass
+    try:
+        sys.stdin.reconfigure(encoding="utf-8", errors="strict")
+    except (AttributeError, ValueError):
+        pass
 
 
 @lru_cache(maxsize=1)
