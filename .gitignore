@@ -47,3 +47,6 @@ temp/
 # Claude Code local settings — machine-specific permissions, never shared
 .claude/settings.local.json
 
+# A Windows `2>nul` redirect writes a real file, and git cannot check that name out again
+nul
+
