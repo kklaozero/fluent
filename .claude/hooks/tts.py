@@ -480,9 +480,16 @@ def ensure_audio(path: Path, hint: str = "") -> None:
 # ----------------------------------------------------------------------- playback
 
 def default_out_dir() -> Path:
-    """Prefer <data_dir>/listening, else repo scratch (sandboxes), else the temp dir."""
-    for d in (data_dir() / "listening", plugin_root() / ".tmp" / "listening",
-              plugin_root() / "temp" / "listening", Path(tempfile.gettempdir()) / "fluent-listening"):
+    """Prefer repo scratch, else <data_dir>/listening, else the temp dir.
+
+    Scratch first on purpose: data_dir() is often a cloud-synced folder (two
+    machines, one quota), and clips are throwaway audio that would otherwise be
+    uploaded and never cleaned up.
+    """
+    for d in (plugin_root() / ".tmp" / "listening",
+              plugin_root() / "temp" / "listening",
+              data_dir() / "listening",
+              Path(tempfile.gettempdir()) / "fluent-listening"):
         if writable(d):
             return d
     return Path(tempfile.gettempdir())

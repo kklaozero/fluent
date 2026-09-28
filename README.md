@@ -307,16 +307,29 @@ These skills don't change what the learner-facing commands do — they let Claud
 
 ### Portability (using Fluent on more than one computer)
 
-The repo carries the system; the data directory carries your history. Move both:
+The repo carries the system; the data directory carries your history. This arrangement is known to work with a cloud-sync client (Nutstore, OneDrive, Syncthing) and keeps the same absolute path on every machine:
 
-```bash
-# on the new machine
-git clone https://github.com/kklaozero/fluent.git && cd fluent
-# then copy ~/.claude/fluent-data/ (all six DBs + .backups/) and results/ across
-python .claude/hooks/tts.py --install    # listening voice; the .tmp/ engine does not travel
+```
+C:\Nutstore\fluent\data\        ← the only folder the sync client watches (six DBs + .backups)
+~/.claude/fluent-data           ← junction pointing at it, so the default lookup still resolves
 ```
 
-Keep the data directory in sync with OneDrive/Syncthing or a separate private repo, and practice on **one machine at a time** so two writers never race over the same JSON.
+Set it up once per machine — absolute paths, because the helper scripts never expand `%VARS%`:
+
+```powershell
+setx FLUENT_DATA_DIR "C:\Nutstore\fluent\data"                 # explicit, wins over every fallback
+setx FLUENT_TTS_HOME "$env:LOCALAPPDATA\fluent-tts"            # keeps the ~90 MB voice out of the sync folder
+cmd /c mklink /J "%USERPROFILE%\.claude\fluent-data" "C:\Nutstore\fluent\data"   # fallback path: no divergence if a session starts without the env var
+```
+
+Then, in the sync client:
+
+- **Ignore `.backups/`** inside that folder — it is ~95% of the bytes and a new copy is written every session. Only the six `.json` files need to travel.
+- **Add `results/` as a second sync folder**, pointed at the `results` directory itself — never at the repo root, or the client would sync `.git/` and eventually corrupt the repository.
+
+`results/` deliberately stays a real directory inside the repo: a sandboxed agent can write inside its workspace for free, but a path that resolves *outside* it costs an approval prompt on every write.
+
+Move the history before you start syncing: copy `~/.claude/fluent-data/` and `results/` onto the new machine, then install the voice there (`python .claude/hooks/tts.py --install` — `.tmp/` holds a machine-specific build and does not travel). Keep practice to **one machine at a time**: a sync client resolves simultaneous writes by keeping the later upload as the main file and renaming the other copy to a conflict file, which you then have to merge by hand.
 
 ### Intelligence Layer
 

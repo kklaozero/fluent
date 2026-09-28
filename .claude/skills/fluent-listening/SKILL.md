@@ -77,7 +77,7 @@ Pick:
 
 ### 5. Write the script to a file — NOT into the chat
 
-Write the transcript with the `Write` tool to a temp file (`<data_dir>/listening/script-{session}.txt`, fall back to `.tmp/listening/` in a repo checkout).
+Write the transcript with the `Write` tool to a scratch file **inside the repo** (`<repo>/.tmp/listening/script-{session}.txt`, git-ignored). Keep audio and scripts out of `<data_dir>` — that directory is often a cloud-synced folder, and only the finished session report belongs in it.
 
 **Then synthesize it.** Always pass the file, never inline text — an inline `--text "..."` would put the transcript in the visible tool call and spoil the exercise:
 
