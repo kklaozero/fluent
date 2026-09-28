@@ -226,7 +226,7 @@ Save the full transcript + Q&A to `/results/fluent-listening-session-{NNN}.md` �
 
 Script (written to file, never printed):
 
-> Hi, this is Alan's voicemail. Quick update on the release: the login bug is fixed and the build passed this morning. We still need one more review before we can ship, so the new version goes out on **Thursday**, not Monday. If anything blocks you, message me before **6 p.m.** Thanks!
+> Hi, this is the release manager's voicemail. Quick update on the release: the login bug is fixed and the build passed this morning. We still need one more review before we can ship, so the new version goes out on **Thursday**, not Monday. If anything blocks you, message me before **6 p.m.** Thanks!
 
 Questions: main idea (what is the message about) → detail (what is still missing before shipping) → number (when does the new version ship) → inference (why isn't it shipping on Monday?).
 
